@@ -3,7 +3,7 @@ $ErrorActionPreference = "Continue"
 
 Write-Host "Stopping all ParkGrid microservices..." -ForegroundColor Cyan
 
-$ports = @(8761, 8080, 8081, 8082, 8083, 8084, 8085)
+$ports = @(8761, 8080, 8081, 8082, 8083, 8084, 8085, 3000)
 $killedCount = 0
 
 foreach ($port in $ports) {

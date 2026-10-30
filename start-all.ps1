@@ -150,14 +150,20 @@ foreach ($s in $servicesToCheck) {
     }
 }
 
+# Start Frontend HTTP server
+$frontendWorkDir = $projectDir
+$nodeCmd = "cmd.exe /c node server.js"
+$nodeRes = Invoke-CimMethod -ClassName Win32_Process -MethodName Create -Arguments @{ CommandLine = $nodeCmd; CurrentDirectory = $frontendWorkDir }
+Write-Host "[Starting] Frontend Server (Port 3000)..." -ForegroundColor Green
+Start-Sleep -Seconds 1
+
 # Open Frontend
-$frontendFile = Join-Path $projectDir "parkgrid-frontend\index.html"
-Write-Host "`nOpening Frontend UI in browser: $frontendFile" -ForegroundColor Cyan
-Start-Process $frontendFile
+Write-Host "`nOpening Frontend UI in browser: http://localhost:3000" -ForegroundColor Cyan
+Start-Process "http://localhost:3000"
 
 Write-Host "`n==========================================================" -ForegroundColor Green
 Write-Host " ParkGrid Solutions is now RUNNING!" -ForegroundColor Green
-Write-Host " Frontend: file:///$($frontendFile -replace '\\', '/')" -ForegroundColor Green
+Write-Host " Frontend: http://localhost:3000" -ForegroundColor Green
 Write-Host " API Gateway: http://localhost:8080" -ForegroundColor Green
 Write-Host " Eureka Dashboard: http://localhost:8761" -ForegroundColor Green
 Write-Host " Pre-configured accounts:" -ForegroundColor Green
