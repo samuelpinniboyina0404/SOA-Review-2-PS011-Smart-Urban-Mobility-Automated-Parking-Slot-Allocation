@@ -93,8 +93,39 @@ public class BookingController {
         return ResponseEntity.ok(bookingService.getAllBookings());
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateBooking(@PathVariable Long id, @RequestBody BookingRequest request) {
+        try {
+            Booking updated = bookingService.updateBooking(id, request);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteBooking(@PathVariable Long id) {
+        try {
+            bookingService.deleteBooking(id);
+            return ResponseEntity.ok(Map.of("message", "Booking deleted successfully", "id", id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/analytics/trends")
     public ResponseEntity<Map<String, Object>> getBookingTrends() {
         return ResponseEntity.ok(bookingService.getBookingTrends());
+    }
+
+    @GetMapping("/instance-info")
+    public ResponseEntity<Map<String, Object>> getInstanceInfo(
+            @org.springframework.beans.factory.annotation.Value("${server.port:8083}") String port) {
+        return ResponseEntity.ok(Map.of(
+                "service", "booking-service",
+                "port", port,
+                "status", "UP",
+                "timestamp", System.currentTimeMillis()
+        ));
     }
 }

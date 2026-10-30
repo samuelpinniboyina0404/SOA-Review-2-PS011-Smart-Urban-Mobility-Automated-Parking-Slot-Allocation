@@ -1,0 +1,24 @@
+# Compiled class files and Maven targets
+target/
+**/target/
+*.jar
+*.war
+*.original
+*.class
+
+# Log files and directories
+logs/
+**/logs/
+*.log
+
+# IDE and tooling
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS generated files
+.DS_Store
+Thumbs.db

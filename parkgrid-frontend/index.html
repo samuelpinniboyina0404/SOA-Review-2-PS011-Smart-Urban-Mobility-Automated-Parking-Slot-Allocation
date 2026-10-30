@@ -81,6 +81,9 @@
         <div>ParkGrid <span>Solutions</span></div>
       </div>
       <div class="user-status">
+        <button class="btn btn-outline" style="border-color: #38bdf8; color: #38bdf8; padding: 6px 12px; font-size: 0.85rem;" onclick="openJwtInspector()">
+          <i class="fa-solid fa-key"></i> Inspect JWT Token
+        </button>
         <span id="roleBadge" class="badge badge-driver"><i class="fa-solid fa-user"></i> Driver Portal</span>
         <span id="userInfo" style="font-size: 0.9rem; color: var(--text-muted);">user@parkgrid.com</span>
         <button class="btn btn-outline" onclick="handleLogout()"><i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out</button>
@@ -136,6 +139,8 @@
         <button class="tab-btn active" id="btnTabDriver" onclick="switchTab('driverTab')"><i class="fa-solid fa-layer-group"></i> Real-time Slot Availability</button>
         <button class="tab-btn" id="btnTabBookings" onclick="switchTab('myBookingsTab')"><i class="fa-solid fa-ticket"></i> My Active Bookings</button>
         <button class="tab-btn" id="btnTabAdmin" onclick="switchTab('adminTab')"><i class="fa-solid fa-chart-pie"></i> Admin Analytics & Zones</button>
+        <button class="tab-btn" id="btnTabCrud" onclick="switchTab('crudTab')"><i class="fa-solid fa-database"></i> CRUD Operations Console</button>
+        <button class="tab-btn" id="btnTabLoadBalancer" onclick="switchTab('loadBalancerTab')"><i class="fa-solid fa-network-wired"></i> Load Balancer & Cluster Monitor</button>
       </div>
 
       <!-- TAB 1: Real-time Slot Availability & Grid -->
@@ -167,6 +172,50 @@
       <div id="adminTab" class="tab-content" style="display: none;">
         <div class="section-title"><i class="fa-solid fa-sliders"></i> Zone Occupancy Metrics & Revenue Breakdown</div>
         <div id="adminContainer"></div>
+      </div>
+
+      <!-- TAB 4: CRUD Operations Console (Zones, Slots, Users, Invoices) -->
+      <div id="crudTab" class="tab-content" style="display: none;">
+        <div class="section-title">
+          <span><i class="fa-solid fa-database"></i> Microservices CRUD Entity Management</span>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-primary" onclick="openAddZoneModal()"><i class="fa-solid fa-plus"></i> New Zone</button>
+            <button class="btn btn-outline" onclick="openAddSlotModal()"><i class="fa-solid fa-plus"></i> New Slot</button>
+            <button class="btn btn-outline" onclick="openAddUserModal()"><i class="fa-solid fa-user-plus"></i> New User</button>
+          </div>
+        </div>
+        <div id="crudTablesContainer"></div>
+      </div>
+
+      <!-- TAB 5: Load Balancer & Cluster Monitor -->
+      <div id="loadBalancerTab" class="tab-content" style="display: none;">
+        <div class="section-title">
+          <span><i class="fa-solid fa-network-wired"></i> Spring Cloud LoadBalancer & Eureka Cluster Visualizer</span>
+          <button class="btn btn-primary" onclick="runLoadBalancerTest()">
+            <i class="fa-solid fa-bolt"></i> Test Load Balancer (Fire 10 Requests)
+          </button>
+        </div>
+        
+        <!-- Service Cluster Topology Grid -->
+        <div class="cluster-grid" id="clusterTopologyGrid"></div>
+
+        <!-- Live Traffic Log Stream & Load Distribution -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 1.5rem;">
+          <div class="stat-card" style="flex-direction: column; align-items: stretch;">
+            <h4 style="color: var(--accent-cyan); margin-bottom: 10px;">
+              <i class="fa-solid fa-chart-bar"></i> Multi-Instance Request Distribution
+            </h4>
+            <div id="loadDistBars"></div>
+          </div>
+          <div class="stat-card" style="flex-direction: column; align-items: stretch;">
+            <h4 style="color: var(--accent-emerald); margin-bottom: 10px;">
+              <i class="fa-solid fa-terminal"></i> Live HTTP Traffic & Routed Instance Log
+            </h4>
+            <div class="log-stream" id="trafficLogStream">
+              <div class="log-entry">System ready. Waiting for requests through API Gateway (8080)...</div>
+            </div>
+          </div>
+        </div>
       </div>
 
     </div>
@@ -222,6 +271,138 @@
         <button class="close-btn" onclick="closeInvoiceModal()">&times;</button>
       </div>
       <div id="invoiceContent"></div>
+    </div>
+  <!-- Zone Create/Edit Modal -->
+  <div class="modal-backdrop" id="zoneModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="zoneModalTitle"><i class="fa-solid fa-parking"></i> Add Parking Zone</div>
+        <button class="close-btn" onclick="closeZoneModal()">&times;</button>
+      </div>
+      <form id="zoneForm" onsubmit="handleZoneSubmit(event)">
+        <input type="hidden" id="zoneIdInput">
+        <div class="form-group">
+          <label>Zone Name</label>
+          <input type="text" id="zoneNameInput" class="form-input" placeholder="e.g. Airport Terminal 1 West" required>
+        </div>
+        <div class="form-group">
+          <label>Location / Concourse</label>
+          <input type="text" id="zoneLocationInput" class="form-input" placeholder="e.g. Ground Deck, Wing B" required>
+        </div>
+        <div class="form-group">
+          <label>Vehicle Type</label>
+          <select id="zoneVehicleTypeInput" class="form-select">
+            <option value="CAR">CAR (Sedan / Hatchback)</option>
+            <option value="EV">EV (Electric Vehicle Charging)</option>
+            <option value="SUV">SUV (Executive Large Bay)</option>
+            <option value="BIKE">BIKE (Two-Wheeler)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Total Capacity (Number of Slots)</label>
+          <input type="number" id="zoneCapacityInput" class="form-input" min="1" max="500" value="10" required>
+        </div>
+        <div class="form-group">
+          <label>Base Tariff Rate ($ / Hour)</label>
+          <input type="number" id="zoneRateInput" class="form-input" min="1" max="100" step="0.5" value="5.0" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+          <i class="fa-solid fa-floppy-disk"></i> Save Parking Zone
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Slot Create/Edit Modal -->
+  <div class="modal-backdrop" id="slotModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="slotModalTitle"><i class="fa-solid fa-square-parking"></i> Add Parking Slot</div>
+        <button class="close-btn" onclick="closeSlotModal()">&times;</button>
+      </div>
+      <form id="slotForm" onsubmit="handleSlotSubmit(event)">
+        <input type="hidden" id="slotIdInput">
+        <div class="form-group">
+          <label>Parent Zone</label>
+          <select id="slotZoneSelect" class="form-select" required></select>
+        </div>
+        <div class="form-group">
+          <label>Slot Identifier / Number</label>
+          <input type="text" id="slotNumberInput" class="form-input" placeholder="e.g. A-110" required>
+        </div>
+        <div class="form-group">
+          <label>Floor Number</label>
+          <input type="number" id="slotFloorInput" class="form-input" min="0" max="10" value="1" required>
+        </div>
+        <div class="form-group">
+          <label>Slot Type</label>
+          <select id="slotTypeInput" class="form-select">
+            <option value="STANDARD">STANDARD</option>
+            <option value="EV_CHARGING">EV_CHARGING</option>
+            <option value="HANDICAPPED">HANDICAPPED</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Status</label>
+          <select id="slotStatusInput" class="form-select">
+            <option value="AVAILABLE">AVAILABLE</option>
+            <option value="MAINTENANCE">MAINTENANCE</option>
+            <option value="RESERVED">RESERVED</option>
+            <option value="OCCUPIED">OCCUPIED</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+          <i class="fa-solid fa-floppy-disk"></i> Save Slot
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- User Create/Edit Modal -->
+  <div class="modal-backdrop" id="userModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div class="modal-title" id="userModalTitle"><i class="fa-solid fa-user"></i> Add New User</div>
+        <button class="close-btn" onclick="closeUserModal()">&times;</button>
+      </div>
+      <form id="userForm" onsubmit="handleUserSubmit(event)">
+        <input type="hidden" id="userIdInput">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="userNameInput" class="form-input" placeholder="John Doe" required>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" id="userEmailInput" class="form-input" placeholder="john@parkgrid.com" required>
+        </div>
+        <div class="form-group" id="userPasswordGroup">
+          <label>Password</label>
+          <input type="password" id="userPasswordInput" class="form-input" placeholder="••••••••">
+        </div>
+        <div class="form-group">
+          <label>User Role</label>
+          <select id="userRoleInput" class="form-select">
+            <option value="ROLE_USER">Driver / Standard User (ROLE_USER)</option>
+            <option value="ROLE_ADMIN">Administrator (ROLE_ADMIN)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+          <i class="fa-solid fa-floppy-disk"></i> Save User Profile
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JWT Token Live Inspector Modal -->
+  <div class="modal-backdrop" id="jwtModal">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <div class="modal-title" style="color: #38bdf8;">
+          <i class="fa-solid fa-shield-halved"></i> JWT Token Inspector & Verification
+        </div>
+        <button class="close-btn" onclick="closeJwtInspector()">&times;</button>
+      </div>
+      <div id="jwtInspectorContent"></div>
     </div>
   </div>
 

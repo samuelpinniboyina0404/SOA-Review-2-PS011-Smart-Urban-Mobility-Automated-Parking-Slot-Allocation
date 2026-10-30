@@ -47,6 +47,11 @@ public class ParkingController {
         return ResponseEntity.ok(parkingService.getSlotById(slotId));
     }
 
+    @GetMapping("/slots")
+    public ResponseEntity<List<ParkingSlot>> getAllSlots() {
+        return ResponseEntity.ok(parkingService.getAllSlots());
+    }
+
     // Admin Endpoints
     @PostMapping("/zones")
     public ResponseEntity<ParkingZone> createZone(@RequestBody ParkingZone zone) {
@@ -58,9 +63,34 @@ public class ParkingController {
         return ResponseEntity.ok(parkingService.updateZone(id, details));
     }
 
+    @DeleteMapping("/zones/{id}")
+    public ResponseEntity<?> deleteZone(@PathVariable Long id) {
+        try {
+            parkingService.deleteZone(id);
+            return ResponseEntity.ok(Map.of("message", "Zone and associated slots deleted successfully", "id", id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @PostMapping("/zones/{zoneId}/slots")
     public ResponseEntity<ParkingSlot> addSlotToZone(@PathVariable Long zoneId, @RequestBody ParkingSlot slot) {
         return ResponseEntity.ok(parkingService.addSlotToZone(zoneId, slot));
+    }
+
+    @PutMapping("/slots/{slotId}")
+    public ResponseEntity<ParkingSlot> updateSlot(@PathVariable Long slotId, @RequestBody ParkingSlot slot) {
+        return ResponseEntity.ok(parkingService.updateSlot(slotId, slot));
+    }
+
+    @DeleteMapping("/slots/{slotId}")
+    public ResponseEntity<?> deleteSlot(@PathVariable Long slotId) {
+        try {
+            parkingService.deleteSlot(slotId);
+            return ResponseEntity.ok(Map.of("message", "Slot deleted successfully", "id", slotId));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 
     @PutMapping("/slots/{slotId}/status")
@@ -73,6 +103,17 @@ public class ParkingController {
     @GetMapping("/analytics/occupancy")
     public ResponseEntity<Map<String, Object>> getOccupancyMetrics() {
         return ResponseEntity.ok(parkingService.getOccupancyMetrics());
+    }
+
+    @GetMapping("/instance-info")
+    public ResponseEntity<Map<String, Object>> getInstanceInfo(
+            @org.springframework.beans.factory.annotation.Value("${server.port:8082}") String port) {
+        return ResponseEntity.ok(Map.of(
+                "service", "parking-service",
+                "port", port,
+                "status", "UP",
+                "timestamp", System.currentTimeMillis()
+        ));
     }
 
     // Inter-Service / Internal Booking Endpoints

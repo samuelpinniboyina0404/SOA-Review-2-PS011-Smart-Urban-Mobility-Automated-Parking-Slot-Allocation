@@ -17,4 +17,11 @@ public class ApiGatewayTest {
     public void testJwtUtilBeanInitialization() {
         assertNotNull(jwtUtil);
     }
+
+    @Test
+    public void testInvalidTokenRejection() {
+        assertFalse(jwtUtil.validateToken("invalid.token.signature"));
+        assertFalse(jwtUtil.validateToken(""));
+        assertFalse(jwtUtil.validateToken(null));
+    }
 }

@@ -54,8 +54,54 @@ public class BillingController {
         }
     }
 
+    @GetMapping("/invoices")
+    public ResponseEntity<List<Invoice>> getAllInvoices() {
+        return ResponseEntity.ok(billingService.getAllInvoices());
+    }
+
+    @PostMapping("/invoices")
+    public ResponseEntity<?> createInvoice(@RequestBody Invoice invoice) {
+        try {
+            Invoice created = billingService.createInvoice(invoice);
+            return ResponseEntity.ok(created);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/invoices/{id}")
+    public ResponseEntity<?> updateInvoice(@PathVariable Long id, @RequestBody Invoice updateDetails) {
+        try {
+            Invoice updated = billingService.updateInvoice(id, updateDetails);
+            return ResponseEntity.ok(updated);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/invoices/{id}")
+    public ResponseEntity<?> deleteInvoice(@PathVariable Long id) {
+        try {
+            billingService.deleteInvoice(id);
+            return ResponseEntity.ok(Map.of("message", "Invoice deleted successfully", "id", id));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     @GetMapping("/analytics/revenue")
     public ResponseEntity<Map<String, Object>> getRevenueAnalytics() {
         return ResponseEntity.ok(billingService.getRevenueAnalytics());
+    }
+
+    @GetMapping("/instance-info")
+    public ResponseEntity<Map<String, Object>> getInstanceInfo(
+            @org.springframework.beans.factory.annotation.Value("${server.port:8084}") String port) {
+        return ResponseEntity.ok(Map.of(
+                "service", "billing-service",
+                "port", port,
+                "status", "UP",
+                "timestamp", System.currentTimeMillis()
+        ));
     }
 }

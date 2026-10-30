@@ -46,6 +46,19 @@ public class ParkingService {
         return zoneRepository.save(zone);
     }
 
+    @Transactional
+    public void deleteZone(Long id) {
+        ParkingZone zone = zoneRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Zone not found with ID: " + id));
+        List<ParkingSlot> slots = slotRepository.findByZoneId(id);
+        slotRepository.deleteAll(slots);
+        zoneRepository.delete(zone);
+    }
+
+    public List<ParkingSlot> getAllSlots() {
+        return slotRepository.findAll();
+    }
+
     public List<ParkingSlot> getSlotsByZone(Long zoneId) {
         return slotRepository.findByZoneId(zoneId);
     }
@@ -89,6 +102,36 @@ public class ParkingService {
         ParkingSlot updated = slotRepository.save(slot);
         recalculateZoneCapacity(slot.getZoneId());
         return updated;
+    }
+
+    @Transactional
+    public ParkingSlot updateSlot(Long slotId, ParkingSlot details) {
+        ParkingSlot slot = slotRepository.findById(slotId)
+                .orElseThrow(() -> new RuntimeException("Slot not found with ID: " + slotId));
+        if (details.getSlotNumber() != null && !details.getSlotNumber().isBlank()) {
+            slot.setSlotNumber(details.getSlotNumber());
+        }
+        if (details.getFloorNumber() != null) {
+            slot.setFloorNumber(details.getFloorNumber());
+        }
+        if (details.getSlotType() != null && !details.getSlotType().isBlank()) {
+            slot.setSlotType(details.getSlotType());
+        }
+        if (details.getStatus() != null && !details.getStatus().isBlank()) {
+            slot.setStatus(details.getStatus().toUpperCase());
+        }
+        ParkingSlot saved = slotRepository.save(slot);
+        recalculateZoneCapacity(slot.getZoneId());
+        return saved;
+    }
+
+    @Transactional
+    public void deleteSlot(Long slotId) {
+        ParkingSlot slot = slotRepository.findById(slotId)
+                .orElseThrow(() -> new RuntimeException("Slot not found with ID: " + slotId));
+        Long zoneId = slot.getZoneId();
+        slotRepository.delete(slot);
+        recalculateZoneCapacity(zoneId);
     }
 
     @Transactional

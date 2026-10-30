@@ -1,8 +1,0 @@
-D:\3 - 1\SOA programming and microservices\parking-service\src\main\java\com\parkgrid\parking\config\DataInitializer.java
-D:\3 - 1\SOA programming and microservices\parking-service\src\main\java\com\parkgrid\parking\controller\ParkingController.java
-D:\3 - 1\SOA programming and microservices\parking-service\src\main\java\com\parkgrid\parking\entity\ParkingSlot.java
-D:\3 - 1\SOA programming and microservices\parking-service\src\main\java\com\parkgrid\parking\entity\ParkingZone.java
-D:\3 - 1\SOA programming and microservices\parking-service\src\main\java\com\parkgrid\parking\ParkingServiceApplication.java
-D:\3 - 1\SOA programming and microservices\parking-service\src\main\java\com\parkgrid\parking\repository\ParkingSlotRepository.java
-D:\3 - 1\SOA programming and microservices\parking-service\src\main\java\com\parkgrid\parking\repository\ParkingZoneRepository.java
-D:\3 - 1\SOA programming and microservices\parking-service\src\main\java\com\parkgrid\parking\service\ParkingService.java

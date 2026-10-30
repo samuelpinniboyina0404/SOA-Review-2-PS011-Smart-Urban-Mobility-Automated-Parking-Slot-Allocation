@@ -133,4 +133,51 @@ public class BillingService {
         stats.put("averageTicketValue", Math.round(avgTicket * 100.0) / 100.0);
         return stats;
     }
+
+    public List<Invoice> getAllInvoices() {
+        return invoiceRepository.findAll();
+    }
+
+    public Invoice createInvoice(Invoice invoice) {
+        if (invoice.getInvoiceNumber() == null || invoice.getInvoiceNumber().isBlank()) {
+            invoice.setInvoiceNumber("INV-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase());
+        }
+        if (invoice.getBookingId() == null) {
+            invoice.setBookingId(0L);
+        }
+        if (invoice.getUserId() == null) {
+            invoice.setUserId(1L);
+        }
+        if (invoice.getPaymentStatus() == null) {
+            invoice.setPaymentStatus("PENDING");
+        }
+        if (invoice.getTotalAmount() == null) {
+            invoice.setTotalAmount(10.0);
+        }
+        return invoiceRepository.save(invoice);
+    }
+
+    public Invoice updateInvoice(Long id, Invoice updateDetails) {
+        Invoice invoice = getInvoiceById(id);
+        if (updateDetails.getTotalAmount() != null) {
+            invoice.setTotalAmount(updateDetails.getTotalAmount());
+        }
+        if (updateDetails.getPaymentStatus() != null) {
+            invoice.setPaymentStatus(updateDetails.getPaymentStatus().toUpperCase());
+        }
+        if (updateDetails.getPaymentMethod() != null) {
+            invoice.setPaymentMethod(updateDetails.getPaymentMethod());
+        }
+        if (updateDetails.getVehicleType() != null) {
+            invoice.setVehicleType(updateDetails.getVehicleType());
+        }
+        return invoiceRepository.save(invoice);
+    }
+
+    public void deleteInvoice(Long id) {
+        if (!invoiceRepository.existsById(id)) {
+            throw new RuntimeException("Invoice not found with ID: " + id);
+        }
+        invoiceRepository.deleteById(id);
+    }
 }

@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -89,5 +90,54 @@ public class AuthService {
         response.put("name", claims.get("name"));
         response.put("role", claims.get("role"));
         return response;
+    }
+
+    public UserDto getUserProfile(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            authHeader = authHeader.substring(7);
+        }
+        String email = jwtUtil.extractUsername(authHeader);
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found for email: " + email));
+        return new UserDto(user.getId(), user.getName(), user.getEmail(), user.getRole());
+    }
+
+    public List<UserDto> getAllUsers() {
+        return userRepository.findAll().stream()
+                .map(u -> new UserDto(u.getId(), u.getName(), u.getEmail(), u.getRole()))
+                .toList();
+    }
+
+    public UserDto getUserById(Long id) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        return new UserDto(user.getId(), user.getName(), user.getEmail(), user.getRole());
+    }
+
+    public UserDto updateUser(Long id, UserDto updateDto) {
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with ID: " + id));
+        if (updateDto.getName() != null && !updateDto.getName().isBlank()) {
+            user.setName(updateDto.getName());
+        }
+        if (updateDto.getEmail() != null && !updateDto.getEmail().isBlank()) {
+            user.setEmail(updateDto.getEmail());
+        }
+        if (updateDto.getRole() != null && !updateDto.getRole().isBlank()) {
+            String role = updateDto.getRole().toUpperCase();
+            if (!role.startsWith("ROLE_")) {
+                role = "ROLE_" + role;
+            }
+            user.setRole(role);
+        }
+        User saved = userRepository.save(user);
+        return new UserDto(saved.getId(), saved.getName(), saved.getEmail(), saved.getRole());
+    }
+
+    public void deleteUser(Long id) {
+        if (!userRepository.existsById(id)) {
+            throw new RuntimeException("User not found with ID: " + id);
+        }
+        userRepository.deleteById(id);
     }
 }

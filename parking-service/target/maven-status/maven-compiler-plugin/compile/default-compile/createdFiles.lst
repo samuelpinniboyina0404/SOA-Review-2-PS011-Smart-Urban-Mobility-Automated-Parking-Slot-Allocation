@@ -1,8 +1,0 @@
-com\parkgrid\parking\repository\ParkingSlotRepository.class
-com\parkgrid\parking\entity\ParkingZone.class
-com\parkgrid\parking\config\DataInitializer.class
-com\parkgrid\parking\controller\ParkingController.class
-com\parkgrid\parking\entity\ParkingSlot.class
-com\parkgrid\parking\ParkingServiceApplication.class
-com\parkgrid\parking\repository\ParkingZoneRepository.class
-com\parkgrid\parking\service\ParkingService.class

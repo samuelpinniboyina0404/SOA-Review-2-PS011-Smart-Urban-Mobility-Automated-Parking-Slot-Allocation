@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -61,5 +62,30 @@ public class BillingServiceTest {
         Map<String, Object> stats = billingService.getRevenueAnalytics();
         assertNotNull(stats);
         assertTrue((Double) stats.get("totalRevenue") > 0);
+    }
+
+    @Test
+    public void testInvoiceCrudOperations() {
+        Invoice inv = new Invoice();
+        inv.setInvoiceNumber("INV-TEST-99");
+        inv.setBookingId(9001L);
+        inv.setUserId(2L);
+        inv.setUserEmail("test@parkgrid.com");
+        inv.setTotalAmount(25.50);
+        inv.setPaymentStatus("PENDING");
+
+        Invoice created = billingService.createInvoice(inv);
+        assertNotNull(created.getId());
+        assertEquals(25.50, created.getTotalAmount());
+
+        created.setTotalAmount(30.00);
+        Invoice updated = billingService.updateInvoice(created.getId(), created);
+        assertEquals(30.00, updated.getTotalAmount());
+
+        List<Invoice> all = billingService.getAllInvoices();
+        assertFalse(all.isEmpty());
+
+        billingService.deleteInvoice(created.getId());
+        assertThrows(RuntimeException.class, () -> billingService.getInvoiceById(created.getId()));
     }
 }

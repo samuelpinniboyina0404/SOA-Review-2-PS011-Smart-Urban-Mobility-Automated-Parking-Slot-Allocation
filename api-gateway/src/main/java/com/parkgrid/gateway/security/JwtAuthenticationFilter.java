@@ -81,13 +81,33 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     }
 
     private boolean isPublicPath(String path) {
+        if (path.endsWith("/instance-info")) {
+            return true;
+        }
         return PUBLIC_PATHS.stream().anyMatch(path::startsWith);
     }
 
     private boolean isAdminOnlyPath(String path, String method) {
-        if (path.startsWith("/api/parking/zones") && ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method))) {
+        // Zone modifications (POST, PUT, DELETE)
+        if (path.startsWith("/api/parking/zones") && ("POST".equalsIgnoreCase(method) || "PUT".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method))) {
             return true;
         }
+        // Slot creation or deletion
+        if (path.contains("/slots") && ("POST".equalsIgnoreCase(method) || "DELETE".equalsIgnoreCase(method))) {
+            return true;
+        }
+        // User management (Admin only)
+        if (path.startsWith("/api/auth/users")) {
+            return true;
+        }
+        // All invoices listing or deletion (Admin only)
+        if (path.equals("/api/billing/invoices") && "GET".equalsIgnoreCase(method)) {
+            return true;
+        }
+        if (path.startsWith("/api/billing/invoices") && "DELETE".equalsIgnoreCase(method)) {
+            return true;
+        }
+        // Analytics and global bookings view
         if (path.startsWith("/api/parking/analytics/") || path.startsWith("/api/billing/analytics/") || path.equals("/api/bookings/all")) {
             return true;
         }

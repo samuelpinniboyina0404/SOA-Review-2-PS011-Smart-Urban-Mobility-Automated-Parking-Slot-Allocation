@@ -55,4 +55,36 @@ public class ParkingServiceTest {
         assertNotNull(metrics);
         assertTrue(metrics.containsKey("overallOccupancyPercentage"));
     }
+
+    @Test
+    public void testZoneAndSlotCrudOperations() {
+        // 1. Create Zone
+        ParkingZone newZone = new ParkingZone("Test Zone X", "Building X", 5, 6.0, "CAR");
+        ParkingZone createdZone = parkingService.createZone(newZone);
+        assertNotNull(createdZone.getId());
+        assertEquals("Test Zone X", createdZone.getName());
+
+        // 2. Update Zone
+        createdZone.setName("Updated Zone X");
+        ParkingZone updatedZone = parkingService.updateZone(createdZone.getId(), createdZone);
+        assertEquals("Updated Zone X", updatedZone.getName());
+
+        // 3. Create Slot
+        ParkingSlot newSlot = new ParkingSlot("X-999", createdZone.getId(), 1, "STANDARD", "AVAILABLE");
+        ParkingSlot createdSlot = parkingService.addSlotToZone(createdZone.getId(), newSlot);
+        assertNotNull(createdSlot.getId());
+
+        // 4. Update Slot
+        createdSlot.setSlotType("HANDICAPPED");
+        ParkingSlot updatedSlot = parkingService.updateSlot(createdSlot.getId(), createdSlot);
+        assertEquals("HANDICAPPED", updatedSlot.getSlotType());
+
+        // 5. Delete Slot
+        parkingService.deleteSlot(createdSlot.getId());
+        assertThrows(RuntimeException.class, () -> parkingService.getSlotById(createdSlot.getId()));
+
+        // 6. Delete Zone
+        parkingService.deleteZone(createdZone.getId());
+        assertFalse(parkingService.getZoneById(createdZone.getId()).isPresent());
+    }
 }

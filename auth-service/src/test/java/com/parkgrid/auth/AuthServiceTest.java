@@ -10,7 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@SpringBootTest
+@SpringBootTest(properties = "eureka.client.enabled=false")
 public class AuthServiceTest {
 
     @Autowired
@@ -42,5 +42,31 @@ public class AuthServiceTest {
         AuthResponse loginResponse = authService.login(loginRequest);
         assertNotNull(loginResponse);
         assertEquals("ROLE_ADMIN", loginResponse.getUser().getRole());
+    }
+
+    @Test
+    public void testUserCrudOperations() {
+        RegisterRequest registerRequest = new RegisterRequest(
+                "Crud Driver",
+                "cruddriver@parkgrid.com",
+                "Driver@123",
+                "ROLE_USER"
+        );
+        AuthResponse reg = authService.register(registerRequest);
+        Long userId = reg.getUser().getId();
+        assertNotNull(userId);
+
+        com.parkgrid.auth.dto.UserDto userDto = authService.getUserById(userId);
+        assertEquals("Crud Driver", userDto.getName());
+
+        userDto.setName("Updated Driver Name");
+        com.parkgrid.auth.dto.UserDto updated = authService.updateUser(userId, userDto);
+        assertEquals("Updated Driver Name", updated.getName());
+
+        com.parkgrid.auth.dto.UserDto profile = authService.getUserProfile("Bearer " + reg.getToken());
+        assertEquals("cruddriver@parkgrid.com", profile.getEmail());
+
+        authService.deleteUser(userId);
+        assertThrows(RuntimeException.class, () -> authService.getUserById(userId));
     }
 }

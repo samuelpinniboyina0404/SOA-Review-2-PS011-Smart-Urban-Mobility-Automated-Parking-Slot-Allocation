@@ -52,4 +52,21 @@ public class BookingServiceTest {
         assertNotNull(trends);
         assertTrue(trends.containsKey("totalBookings"));
     }
+
+    @Test
+    public void testBookingUpdateAndDeleteCrud() {
+        BookingRequest req = new BookingRequest(5L, "cruduser@parkgrid.com", 103L, "KA-05-XY-7777", "CAR", 1.5);
+        Booking created = bookingService.createBooking(req);
+        assertNotNull(created.getId());
+
+        BookingRequest updateReq = new BookingRequest();
+        updateReq.setVehicleNumber("KA-05-XY-8888");
+        updateReq.setExpectedDurationHours(3.5);
+        Booking updated = bookingService.updateBooking(created.getId(), updateReq);
+        assertEquals("KA-05-XY-8888", updated.getVehicleNumber());
+        assertEquals(3.5, updated.getExpectedDurationHours());
+
+        bookingService.deleteBooking(created.getId());
+        assertThrows(RuntimeException.class, () -> bookingService.getBookingById(created.getId()));
+    }
 }

@@ -202,4 +202,38 @@ public class BookingService {
         stats.put("cancelledBookings", cancelled);
         return stats;
     }
+
+    @Transactional
+    public Booking updateBooking(Long bookingId, BookingRequest updateRequest) {
+        Booking booking = getBookingById(bookingId);
+        if ("COMPLETED".equalsIgnoreCase(booking.getStatus()) || "CANCELLED".equalsIgnoreCase(booking.getStatus())) {
+            throw new IllegalStateException("Cannot update a booking that is " + booking.getStatus());
+        }
+
+        if (updateRequest.getVehicleNumber() != null && !updateRequest.getVehicleNumber().isBlank()) {
+            booking.setVehicleNumber(updateRequest.getVehicleNumber());
+        }
+        if (updateRequest.getVehicleType() != null && !updateRequest.getVehicleType().isBlank()) {
+            booking.setVehicleType(updateRequest.getVehicleType());
+        }
+        if (updateRequest.getExpectedDurationHours() != null && updateRequest.getExpectedDurationHours() > 0) {
+            booking.setExpectedDurationHours(updateRequest.getExpectedDurationHours());
+        }
+        return bookingRepository.save(booking);
+    }
+
+    @Transactional
+    public void deleteBooking(Long bookingId) {
+        Booking booking = getBookingById(bookingId);
+        if ("CONFIRMED".equalsIgnoreCase(booking.getStatus()) || "ACTIVE".equalsIgnoreCase(booking.getStatus())) {
+            if (parkingClient != null) {
+                try {
+                    parkingClient.releaseSlot(booking.getSlotId());
+                } catch (Exception e) {
+                    System.err.println("Warning: Failed to release slot during booking deletion: " + e.getMessage());
+                }
+            }
+        }
+        bookingRepository.delete(booking);
+    }
 }

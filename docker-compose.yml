@@ -33,12 +33,26 @@ services:
     networks:
       - parkgrid-net
 
-  parking-service:
+  parking-service-1:
     build: ./parking-service
-    container_name: parkgrid-parking-service
+    container_name: parkgrid-parking-service-1
     ports:
       - "8082:8082"
     environment:
+      - SERVER_PORT=8082
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+    depends_on:
+      - eureka-server
+    networks:
+      - parkgrid-net
+
+  parking-service-2:
+    build: ./parking-service
+    container_name: parkgrid-parking-service-2
+    ports:
+      - "8085:8085"
+    environment:
+      - SERVER_PORT=8085
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
     depends_on:
       - eureka-server
@@ -52,11 +66,12 @@ services:
       - "8083:8083"
     environment:
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - PARKING_SERVICE_URL=http://parking-service:8082
-      - BILLING_SERVICE_URL=http://billing-service:8084
+      - PARKING_SERVICE_URL=
+      - BILLING_SERVICE_URL=
     depends_on:
       - eureka-server
-      - parking-service
+      - parking-service-1
+      - parking-service-2
     networks:
       - parkgrid-net
 
